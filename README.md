@@ -1,8 +1,7 @@
-![Screen Shot 2025-02-24 at 5 49 47 PM](https://github.com/user-attachments/assets/11ac9114-f86b-4d7b-9c61-29463f04b6b1)
-
 # DrawBox
 
 DrawBox is a simple command-line tool that prints a box with text onto the shell. It supports customizable background and text colors, and can create both solid and hollow boxes.
+![Screen Shot 2025-02-24 at 5 49 47 PM](https://github.com/user-attachments/assets/11ac9114-f86b-4d7b-9c61-29463f04b6b1)
 
 ## Features
 
