@@ -26,7 +26,13 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
    ```bash
    g++ drawbox.cpp -o drawbox
    ```
-4. (Optional) Move the binary to a directory in your `PATH`:
+   On MacOS compile with the following command:
+   ```bash
+   clang++ -std=c++11 -o drawbox drawbox.cpp
+   ```
+   This will use a later version of C++ to ensure the binary compiles.
+   
+5. (Optional) Move the binary to a directory in your `PATH`:
    ```bash
    sudo mv drawbox /usr/local/bin/
    ```
@@ -43,6 +49,10 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
 
 ```bash
 drawbox <text> [solid] [bg_color] [text_color]
+```
+On MacOS use this format:
+```bash
+drawbox 'text' [solid] [bg_color] [text_color]
 ```
 
 - `<text>`: The text to display in the box (required).
@@ -106,6 +116,3 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-# DISCLAIMER
-This tool does NOT work on macOS yet.
