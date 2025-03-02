@@ -9,6 +9,8 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
 - **Solid or Hollow Boxes**: Choose between solid or hollow box styles.
 - **Color Customization**: Set custom background and text colors using ANSI color codes.
 - **Easy to Use**: Simple command-line interface with optional arguments.
+- **List of Colors**: Use the `-l` or `--list` commands to see all available colors.
+- **Help**: Use the `--help` command to see information about DrawBox
 
 ## Installation
 
@@ -38,6 +40,8 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
    ```
 
 ### Using Precompiled Binary
+
+**WARNING PRE-COMPILED BINARIES MAY NOT BE UP TO DATE, IT IS ADVISED THAT YOU COMPILE IT YOURSELF**
 
 1. Download the binary from the [Releases](https://github.com/kaliforniagator/drawbox/releases) page.
 2. (Optional) Move the binary to a directory in your `PATH`:
