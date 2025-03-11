@@ -1,7 +1,8 @@
 # DrawBox
 
 DrawBox is a simple command-line tool that prints a box with text onto the shell. It supports customizable background and text colors, and can create both solid and hollow boxes.
-![Screen Shot 2025-02-24 at 5 49 47 PM](https://github.com/user-attachments/assets/11ac9114-f86b-4d7b-9c61-29463f04b6b1)
+![Screen Shot 2025-03-11 at 4 57 57 PM](https://github.com/user-attachments/assets/f87f5b24-1a26-4c6a-971c-4a25fa2907cd)
+
 
 ## Features
 
@@ -35,16 +36,6 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
    This will use a later version of C++ to ensure the binary compiles.
    
 5. (Optional) Move the binary to a directory in your `PATH`:
-   ```bash
-   sudo mv drawbox /usr/local/bin/
-   ```
-
-### Using Precompiled Binary
-
-**WARNING PRE-COMPILED BINARIES MAY NOT BE UP TO DATE, IT IS ADVISED THAT YOU COMPILE IT YOURSELF**
-
-1. Download the binary from the [Releases](https://github.com/kaliforniagator/drawbox/releases) page.
-2. (Optional) Move the binary to a directory in your `PATH`:
    ```bash
    sudo mv drawbox /usr/local/bin/
    ```
