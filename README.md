@@ -1,30 +1,57 @@
-# DrawBox
-
-DrawBox is a simple command-line tool that prints a box with text onto the shell. It supports customizable background and text colors, and can create both solid and hollow boxes.
 ![Screen Shot 2025-03-11 at 4 57 57 PM](https://github.com/user-attachments/assets/f87f5b24-1a26-4c6a-971c-4a25fa2907cd)
 
+# DrawBox
+
+DrawBox is a versatile command-line utility that enhances terminal output with beautifully formatted boxes, tables, banners, and interactive textboxes. It supports customizable background and text colors, with multiple display modes for different visual needs.
 
 ## Features
 
-- **Customizable Text**: Display any text inside the box.
-- **Solid or Hollow Boxes**: Choose between solid or hollow box styles.
-- **Color Customization**: Set custom background and text colors using ANSI color codes.
-- **Easy to Use**: Simple command-line interface with optional arguments.
-- **List of Colors**: Use the `-l` or `--list` commands to see all available colors.
-- **Help**: Use the `--help` command to see information about DrawBox
+- **Multiple Display Modes**:
+  - **Box**: Create simple or solid boxes around text
+  - **Table**: Format data in organized tables with customizable styles
+  - **Banner**: Display attention-grabbing banners for important messages
+  - **Textbox**: Create interactive input prompts with styled labels
+
+- **Styling Options**:
+  - **Solid/Hollow Modes**: Choose filled backgrounds or colored outlines
+  - **Color Customization**: Extensive color palette for backgrounds and text
+  - **Unicode Characters**: Beautiful box-drawing characters for clean visuals
+
+- **Convenience Features**:
+  - **Showcase**: Preview all DrawBox capabilities with a single command
+  - **Help**: Detailed usage instructions with examples
+  - **Input Capture**: Redirect textbox input to files or other programs
 
 ## Installation
 
+### Quick Installation (Recommended)
+
+Use the installation script to automatically download, compile, and install DrawBox:
+
+```bash
+curl -s https://raw.githubusercontent.com/KaliforniaGator/DrawBox/main/update.sh | bash
+```
+
+This script will:
+1. Download the latest DrawBox source code
+2. Install the necessary compiler if not present
+3. Compile the source code
+4. Move the binary to `/usr/local/bin/` for system-wide access
+
 ### From Source
+
+If you prefer to install manually:
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/kaliforniagator/drawbox.git
    ```
+
 2. Navigate to the project directory:
    ```bash
    cd drawbox
    ```
+
 3. Compile the source code:
    ```bash
    g++ drawbox.cpp -o drawbox
@@ -35,7 +62,7 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
    ```
    This will use a later version of C++ to ensure the binary compiles.
    
-5. (Optional) Move the binary to a directory in your `PATH`:
+4. (Optional) Move the binary to a directory in your `PATH`:
    ```bash
    sudo mv drawbox /usr/local/bin/
    ```
@@ -43,66 +70,81 @@ DrawBox is a simple command-line tool that prints a box with text onto the shell
 ## Usage
 
 ```bash
-drawbox <text> [solid] [bg_color] [text_color]
+drawbox [mode] <arguments>...
 ```
-On MacOS use this format:
+
+### Box Mode (default)
 ```bash
-drawbox 'text' [solid] [bg_color] [text_color]
+drawbox [box] <text> [solid] [bg_color] [text_color]
 ```
 
-- `<text>`: The text to display in the box (required).
-- `[solid]`: Optional. Use `solid` to create a solid box.
-- `[bg_color]`: Optional. Background color (e.g., `bg_blue`, `bg_red`).
-- `[text_color]`: Optional. Text color (e.g., `white`, `green`).
+### Table Mode
+```bash
+drawbox table <row1> <row2> ... [solid|hollow] [bg_color] [text_color]
+```
 
-### Examples
+### Banner Mode
+```bash
+drawbox banner <text> [bg_color] [text_color]
+```
 
-1. Display a hollow box with default colors:
+### Textbox Mode
+```bash
+drawbox textbox <title> [bg_color] [text_color]
+```
+
+### Other Commands
+```bash
+drawbox showcase    # Display examples of all features
+drawbox --help      # Show usage instructions
+```
+
+## Examples
+
+1. Simple hollow box with default colors:
    ```bash
    drawbox "Hello, World!"
    ```
 
-2. Display a solid box with a green background and white text:
+2. Solid box with custom colors:
    ```bash
-   drawbox "Hello, World!" solid bg_green white
+   drawbox "Hello, World!" solid bg_green bold_white
    ```
 
-3. Display a hollow box with red text:
+3. Create a table with multiple rows:
    ```bash
-   drawbox "Hello, World!" red
+   drawbox table "Name,Age,Role" "John,32,Developer" "Alice,28,Designer"
+   ```
+
+4. Create a colored table:
+   ```bash
+   drawbox table "Name,Age,Role" "John,32,Developer" "Alice,28,Designer" solid bg_magenta bold_white
+   ```
+
+5. Display an attention-grabbing banner:
+   ```bash
+   drawbox banner "Welcome to My Program!" bg_yellow bold_black
+   ```
+
+6. Interactive input with styled prompt:
+   ```bash
+   drawbox textbox "Enter your name:" bg_cyan bold_white
+   ```
+
+7. Capture input to a file:
+   ```bash
+   drawbox textbox "Enter your name:" > username.txt
    ```
 
 ## Supported Colors
 
 ### Background Colors
-
-- `bg_black`
-- `bg_red`
-- `bg_green`
-- `bg_yellow`
-- `bg_blue`
-- `bg_magenta`
-- `bg_cyan`
-- `bg_white`
+- `bg_black`, `bg_red`, `bg_green`, `bg_yellow`
+- `bg_blue`, `bg_magenta`, `bg_cyan`, `bg_white`
 
 ### Text Colors
-
-- `black`
-- `red`
-- `green`
-- `yellow`
-- `blue`
-- `magenta`
-- `cyan`
-- `white`
-- `bold_black`
-- `bold_red`
-- `bold_green`
-- `bold_yellow`
-- `bold_blue`
-- `bold_magenta`
-- `bold_cyan`
-- `bold_white`
+- Regular: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`
+- Bold: `bold_black`, `bold_red`, `bold_green`, `bold_yellow`, `bold_blue`, `bold_magenta`, `bold_cyan`, `bold_white`
 
 ## Contributing
 
