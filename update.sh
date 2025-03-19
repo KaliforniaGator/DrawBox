@@ -35,13 +35,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Compile drawbox.cpp using g++ or clang
-echo "Compiling drawbox.cpp..."
-
-# Check if g++ is available
+# Check if g++ is installed to compile drawbox.cpp
+echo "Checking if g++ is installed..."
 if command -v g++ &> /dev/null; then
     COMPILER="g++"
-# Check if clang is available
 elif command -v clang++ &> /dev/null; then
     COMPILER="clang++"
 else
@@ -49,7 +46,8 @@ else
     exit 1
 fi
 
-# Compile the file
+# Compile drawbox.cpp using the available compiler
+echo "Compiling drawbox.cpp with $COMPILER..."
 $COMPILER drawbox.cpp -o drawbox
 
 # Check if the compilation was successful
