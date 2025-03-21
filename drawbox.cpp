@@ -76,256 +76,161 @@ void draw_box(const std::string &text, bool solid = false, const std::string &bg
     }
 }
 
-// Function to draw a table
+// Function to draw a table with properly adjusted widths for ANSI escape codes
 void draw_table(const std::vector<std::vector<std::string>> &rows, bool solid_mode = false,
-                bool hollow_mode = false, const std::string &bg_color = "bg_blue",
-                const std::string &text_color = "bold_white")
+    bool hollow_mode = false, const std::string &bg_color = "bg_blue",
+    const std::string &text_color = "bold_white")
 {
-    std::string bg_code = "";
-    std::string text_code = "";
-    std::string border_color_code = "";
-    std::string reset_code = "\033[0m";
+    // Unicode box drawing characters
+    const std::string border_chars[] = {
+        "┌", "┐", "└", "┘", "─", "│", "┬", "┴", "├", "┤", "┼" 
+    };
+    enum BorderIndex { TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, 
+              HORIZONTAL, VERTICAL, TOP_T, BOTTOM_T, LEFT_T, RIGHT_T, CROSS };
 
-    // Set up color codes based on mode
-    if (solid_mode)
-    {
-        // Solid mode - use background color and text color
-        bg_code = COLOR_MAP.count(bg_color) ? COLOR_MAP.at(bg_color) : COLOR_MAP.at("bg_blue");
-        text_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
-    }
-    else if (hollow_mode)
-    {
-        // Hollow mode - only use text color for border characters
-        border_color_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
-    }
-    // Otherwise, no color mode - all codes remain empty
+    // Color setup
+    std::string bg_code = solid_mode && COLOR_MAP.count(bg_color) ? COLOR_MAP.at(bg_color) : "";
+    std::string text_code = solid_mode && COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : "";
+    std::string border_color_code = hollow_mode && COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : "";
+    const std::string reset_code = "\033[0m";
 
-    // Find the maximum length of the columns
-    std::vector<int> column_widths;
-    for (const auto &row : rows)
-    {
-        for (size_t i = 0; i < row.size(); ++i)
-        {
-            if (column_widths.size() <= i)
-            {
-                column_widths.push_back(row[i].length());
+    // Improved function to calculate visible length without ANSI escape codes
+    auto visible_length = [](const std::string &str) -> size_t {
+        size_t visible_len = 0;
+        bool in_escape = false;
+        
+        for (size_t i = 0; i < str.length(); i++) {
+            if (str[i] == '\033') {
+                in_escape = true;
+                continue;
             }
-            else
-            {
-                column_widths[i] = std::max(column_widths[i], static_cast<int>(row[i].length()));
+            
+            if (in_escape) {
+                if (str[i] == 'm') {
+                    in_escape = false;
+                }
+                continue;
             }
+            
+            // Only count visible characters
+            visible_len++;
+        }
+        
+        return visible_len;
+    };
+
+    // Helper function to repeat a string
+    auto repeat_string = [](const std::string &str, size_t n) -> std::string {
+        std::string result;
+        for (size_t i = 0; i < n; i++) {
+            result += str;
+        }
+        return result;
+    };
+
+    // Calculate max visible column widths, accounting for ANSI escape sequences
+    std::vector<size_t> column_widths;
+    
+    // First find the maximum number of columns in any row
+    size_t max_columns = 0;
+    for (const auto &row : rows) {
+        max_columns = std::max(max_columns, row.size());
+    }
+    
+    // Initialize column_widths with zeros
+    column_widths.resize(max_columns, 0);
+    
+    // Calculate the maximum width for each column
+    for (const auto &row : rows) {
+        for (size_t i = 0; i < row.size(); ++i) {
+            // Calculate visible length (excluding ANSI escape codes)
+            size_t text_length = visible_length(row[i]);
+            column_widths[i] = std::max(column_widths[i], text_length);
         }
     }
 
-    // Unicode box drawing characters
-    const char *top_left = "┌";
-    const char *top_right = "┐";
-    const char *bottom_left = "└";
-    const char *bottom_right = "┘";
-    const char *horizontal = "─";
-    const char *vertical = "│";
-    const char *top_t = "┬";
-    const char *bottom_t = "┴";
-    const char *left_t = "├";
-    const char *right_t = "┤";
-    const char *cross = "┼";
+    // Helper function to draw horizontal borders
+    auto draw_horizontal_border = [&](BorderIndex left, BorderIndex middle, BorderIndex right) {
+        std::string border_start = (solid_mode ? bg_code + text_code : 
+                               (hollow_mode ? border_color_code : ""));
+
+        std::cout << border_start << border_chars[left];
+
+        for (size_t i = 0; i < column_widths.size(); ++i) {
+            std::cout << repeat_string(border_chars[HORIZONTAL], column_widths[i] + 2);
+            if (i < column_widths.size() - 1) {
+                std::cout << border_chars[middle];
+            }
+        }
+
+        std::cout << border_chars[right];
+        if (!border_start.empty()) std::cout << reset_code;
+        std::cout << "\n";
+    };
 
     // Draw top border
-    if (solid_mode)
-    {
-        // Solid mode with background color
-        std::cout << bg_code << text_code << top_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << top_t;
-            }
-        }
-        std::cout << top_right << reset_code << "\n";
-    }
-    else if (hollow_mode)
-    {
-        // Hollow mode with colored borders
-        std::cout << border_color_code << top_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << top_t;
-            }
-        }
-        std::cout << top_right << reset_code << "\n";
-    }
-    else
-    {
-        // No color mode
-        std::cout << top_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << top_t;
-            }
-        }
-        std::cout << top_right << "\n";
-    }
+    draw_horizontal_border(TOP_LEFT, TOP_T, TOP_RIGHT);
 
     // Draw rows
-    for (const auto &row : rows)
-    {
-        // Draw row content
-        if (solid_mode)
-        {
-            // Solid mode with background color
-            std::cout << bg_code << text_code << vertical;
-            for (size_t i = 0; i < row.size(); ++i)
-            {
-                std::cout << " " << std::setw(column_widths[i]) << row[i] << " ";
-                if (i < row.size() - 1)
-                {
-                    std::cout << vertical;
+    for (size_t row_idx = 0; row_idx < rows.size(); ++row_idx) {
+        const auto &row = rows[row_idx];
+
+        // Output row content
+        std::string border_start = (solid_mode ? bg_code + text_code : 
+                               (hollow_mode ? border_color_code : ""));
+
+        std::cout << border_start << border_chars[VERTICAL];
+        if (!border_start.empty() && !solid_mode) std::cout << reset_code;
+
+        // Ensure we handle all columns, even if this row has fewer
+        for (size_t i = 0; i < column_widths.size(); ++i) {
+            std::string cell_content = (i < row.size()) ? row[i] : "";
+            size_t visible_length_value = visible_length(cell_content);
+            
+            // Calculate needed padding
+            int padding_needed = static_cast<int>(column_widths[i]) - static_cast<int>(visible_length_value);
+            
+            if (solid_mode) {
+                // In solid mode, maintain the background color for cell values
+                std::cout << " " << cell_content;
+                
+                // Apply padding after the cell content, accounting for ANSI codes
+                if (padding_needed > 0) {
+                    std::cout << repeat_string(" ", padding_needed);
                 }
-                else
-                {
-                    std::cout << vertical << reset_code;
+                
+                std::cout << " " << border_chars[VERTICAL];
+            } else {
+                // Normal mode or hollow mode
+                std::cout << " " << cell_content;
+                
+                // Apply padding after the cell content, accounting for ANSI codes
+                if (padding_needed > 0) {
+                    std::cout << repeat_string(" ", padding_needed);
                 }
-            }
-            std::cout << "\n";
-        }
-        else if (hollow_mode)
-        {
-            // Hollow mode with colored borders
-            std::cout << border_color_code << vertical << reset_code;
-            for (size_t i = 0; i < row.size(); ++i)
-            {
-                std::cout << " " << std::setw(column_widths[i]) << row[i] << " ";
-                if (i < row.size() - 1)
-                {
-                    std::cout << border_color_code << vertical << reset_code;
-                }
-                else
-                {
-                    std::cout << border_color_code << vertical << reset_code;
-                }
-            }
-            std::cout << "\n";
-        }
-        else
-        {
-            // No color mode
-            std::cout << vertical;
-            for (size_t i = 0; i < row.size(); ++i)
-            {
-                std::cout << " " << std::setw(column_widths[i]) << row[i] << " ";
-                if (i < row.size() - 1)
-                {
-                    std::cout << vertical;
-                }
-                else
-                {
-                    std::cout << vertical;
+                
+                std::cout << " ";
+                
+                // Add vertical border with appropriate color
+                if (hollow_mode) {
+                    std::cout << border_color_code << border_chars[VERTICAL] << reset_code;
+                } else {
+                    std::cout << border_chars[VERTICAL];
                 }
             }
-            std::cout << "\n";
         }
 
+        std::cout << "\n";
+
         // Draw horizontal separator after each row except the last
-        if (rows.size() > 1 && &row != &rows.back())
-        {
-            if (solid_mode)
-            {
-                // Solid mode with background color
-                std::cout << bg_code << text_code << left_t;
-                for (size_t i = 0; i < column_widths.size(); ++i)
-                {
-                    std::cout << repeat_string(horizontal, column_widths[i] + 2);
-                    if (i < column_widths.size() - 1)
-                    {
-                        std::cout << cross;
-                    }
-                }
-                std::cout << right_t << reset_code << "\n";
-            }
-            else if (hollow_mode)
-            {
-                // Hollow mode with colored borders
-                std::cout << border_color_code << left_t;
-                for (size_t i = 0; i < column_widths.size(); ++i)
-                {
-                    std::cout << repeat_string(horizontal, column_widths[i] + 2);
-                    if (i < column_widths.size() - 1)
-                    {
-                        std::cout << cross;
-                    }
-                }
-                std::cout << right_t << reset_code << "\n";
-            }
-            else
-            {
-                // No color mode
-                std::cout << left_t;
-                for (size_t i = 0; i < column_widths.size(); ++i)
-                {
-                    std::cout << repeat_string(horizontal, column_widths[i] + 2);
-                    if (i < column_widths.size() - 1)
-                    {
-                        std::cout << cross;
-                    }
-                }
-                std::cout << right_t << "\n";
-            }
+        if (row_idx < rows.size() - 1) {
+            draw_horizontal_border(LEFT_T, CROSS, RIGHT_T);
         }
     }
 
     // Draw bottom border
-    if (solid_mode)
-    {
-        // Solid mode with background color
-        std::cout << bg_code << text_code << bottom_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << bottom_t;
-            }
-        }
-        std::cout << bottom_right << reset_code << "\n";
-    }
-    else if (hollow_mode)
-    {
-        // Hollow mode with colored borders
-        std::cout << border_color_code << bottom_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << bottom_t;
-            }
-        }
-        std::cout << bottom_right << reset_code << "\n";
-    }
-    else
-    {
-        // No color mode
-        std::cout << bottom_left;
-        for (size_t i = 0; i < column_widths.size(); ++i)
-        {
-            std::cout << repeat_string(horizontal, column_widths[i] + 2);
-            if (i < column_widths.size() - 1)
-            {
-                std::cout << bottom_t;
-            }
-        }
-        std::cout << bottom_right << "\n";
-    }
+    draw_horizontal_border(BOTTOM_LEFT, BOTTOM_T, BOTTOM_RIGHT);
 }
-
 // Function to draw a banner
 void draw_banner(const std::string &text, const std::string &bg_color = "bg_blue", const std::string &text_color = "bold_white")
 {
