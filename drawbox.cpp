@@ -294,6 +294,11 @@ void draw_table(const std::vector<std::vector<std::string>> &rows, bool solid_mo
                 }
                 
                 std::cout << " " << border_chars[VERTICAL];
+
+                if (i >= row.size() - 1) {
+                    std::cout << reset_code;
+                }
+                
             } else {
                 // Normal mode or hollow mode
                 std::cout << " " << cell_content;
