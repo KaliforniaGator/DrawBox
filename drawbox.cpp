@@ -713,7 +713,7 @@ void showcase_features()
 
     // Banner
     std::cout << "6. Banner:" << std::endl;
-    draw_banner("Welcome to DrawBox!", "bg_yellow", "bold_black");
+    draw_banner("Welcome to DrawBox!", "bg_yellow", "black");
     std::cout << std::endl;
 
     // Textbox demo (simulation)
