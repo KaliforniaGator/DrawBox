@@ -5,7 +5,75 @@
 #include <sstream>
 #include <iomanip>
 #include <iostream>
-#include <string>
+#include <regex>
+#include <wchar.h>
+#include <locale.h>
+#include <fstream>
+
+// ===== Unicode Character Sets =====
+// Create a namespace for your unicode libraries
+namespace unicode {
+    // Box drawing characters - basic set
+    const std::unordered_map<std::string, std::string> BOX_CHARS = {
+        // Simple box drawing
+        {"h_line", "─"}, {"v_line", "│"}, 
+        {"tl_corner", "┌"}, {"tr_corner", "┐"}, {"bl_corner", "└"}, {"br_corner", "┘"},
+        {"t_down", "┬"}, {"t_up", "┴"}, {"t_right", "├"}, {"t_left", "┤"}, {"cross", "┼"},
+        
+        // Double line box drawing
+        {"d_h_line", "═"}, {"d_v_line", "║"}, 
+        {"d_tl_corner", "╔"}, {"d_tr_corner", "╗"}, {"d_bl_corner", "╚"}, {"d_br_corner", "╝"},
+        {"d_t_down", "╦"}, {"d_t_up", "╩"}, {"d_t_right", "╠"}, {"d_t_left", "╣"}, {"d_cross", "╬"},
+        
+        // Rounded corners
+        {"r_tl_corner", "╭"}, {"r_tr_corner", "╮"}, {"r_bl_corner", "╰"}, {"r_br_corner", "╯"},
+        
+        // Heavy lines
+        {"heavy_h", "━"}, {"heavy_v", "┃"},
+        {"heavy_tl", "┏"}, {"heavy_tr", "┓"}, {"heavy_bl", "┗"}, {"heavy_br", "┛"},
+        
+        // Block elements
+        {"block_full", "█"}, {"block_half", "▄"}, {"block_light", "░"}, {"block_medium", "▒"}, {"block_dark", "▓"},
+        
+        // Arrows
+        {"arrow_up", "↑"}, {"arrow_down", "↓"}, {"arrow_left", "←"}, {"arrow_right", "→"},
+        {"arrow_up_down", "↕"}, {"arrow_left_right", "↔"},
+        
+        // Geometric shapes
+        {"circle", "●"}, {"triangle", "▲"}, {"square", "■"}, {"diamond", "◆"},
+        
+        // Other useful symbols
+        {"check", "✓"}, {"cross_mark", "✗"}, {"bullet", "•"}, {"star", "★"}
+    };
+    
+    // Emoji characters
+    const std::unordered_map<std::string, std::string> EMOJI = {
+        // Faces
+        {"smile", "😊"}, {"laugh", "😄"}, {"sad", "😢"}, {"angry", "😠"}, {"think", "🤔"},
+        
+        // Common objects
+        {"heart", "❤️"}, {"fire", "🔥"}, {"thumbs_up", "👍"}, {"thumbs_down", "👎"},
+        {"clap", "👏"}, {"gift", "🎁"}, {"bulb", "💡"}, {"book", "📚"},
+        
+        // Weather
+        {"sun", "☀️"}, {"cloud", "☁️"}, {"rain", "🌧️"}, {"snow", "❄️"}, {"storm", "⚡"},
+        
+        // Tech
+        {"computer", "💻"}, {"phone", "📱"}, {"email", "📧"}, {"camera", "📷"},
+        
+        // Nature
+        {"tree", "🌳"}, {"flower", "🌸"}, {"mountain", "⛰️"}, {"ocean", "🌊"}
+    };
+    
+    // Icons for UI elements
+    const std::unordered_map<std::string, std::string> UI_ICONS = {
+        {"settings", "⚙️"}, {"search", "🔍"}, {"user", "👤"}, {"home", "🏠"},
+        {"menu", "☰"}, {"close", "✕"}, {"add", "➕"}, {"remove", "➖"},
+        {"info", "ℹ️"}, {"warning", "⚠️"}, {"error", "⛔"}, {"success", "✅"},
+        {"calendar", "📅"}, {"clock", "🕒"}, {"lock", "🔒"}, {"unlock", "🔓"},
+        {"play", "▶️"}, {"pause", "⏸️"}, {"stop", "⏹️"}, {"next", "⏭️"}, {"prev", "⏮️"}
+    };
+}
 
 // ANSI color codes
 const std::unordered_map<std::string, std::string> COLOR_MAP = {
@@ -45,6 +113,32 @@ std::string repeat_string(const std::string &str, int n)
     return result;
 }
 
+// Function to calculate the visible length of a string, ignoring ANSI escape sequences
+size_t visible_length(const std::string &str) {
+    size_t visible_len = 0;
+    bool in_escape = false;
+    
+    for (size_t i = 0; i < str.length(); i++) {
+        if (str[i] == '\033') {
+            in_escape = true;
+            continue;
+        }
+        
+        if (in_escape) {
+            if (str[i] == 'm') {
+                in_escape = false;
+            }
+            continue;
+        }
+        
+        // Only count visible characters
+        visible_len++;
+    }
+    
+    return visible_len;
+}
+
+
 // Function to draw a text box
 void draw_box(const std::string &text, bool solid = false, const std::string &bg_color = "bg_blue", const std::string &text_color = "bold_white")
 {
@@ -65,7 +159,7 @@ void draw_box(const std::string &text, bool solid = false, const std::string &bg
     if (solid)
     {
         std::cout << bg_code << text_code << "┌" << horizontal_line << "┐" << reset_code << "\n";
-        std::cout << bg_code  << text_code << "│" << std::string(left_spaces, ' ') << text_code << text << bg_code << text_code << std::string(right_spaces, ' ') << "│" << reset_code << "\n";
+        std::cout << bg_code << text_code << "│" << std::string(left_spaces, ' ') << text_code << text << bg_code << text_code << std::string(right_spaces, ' ') << "│" << reset_code << "\n";
         std::cout << bg_code << text_code << "└" << horizontal_line << "┘" << reset_code << "\n";
     }
     else
@@ -231,6 +325,7 @@ void draw_table(const std::vector<std::vector<std::string>> &rows, bool solid_mo
     // Draw bottom border
     draw_horizontal_border(BOTTOM_LEFT, BOTTOM_T, BOTTOM_RIGHT);
 }
+
 // Function to draw a banner
 void draw_banner(const std::string &text, const std::string &bg_color = "bg_blue", const std::string &text_color = "bold_white")
 {
@@ -439,6 +534,35 @@ void display_help()
     std::cerr << "      Note: The textbox mode output can be redirected (e.g., `drawbox textbox \"Title:\" > output.txt`).\n";
     std::cerr << "\n";
     std::cerr << "  showcase  - Display examples of all drawbox features.\n";
+
+    std::cerr << "  progress <value> <max> [width] [fill_char] [empty_char] [text_color]  - Draw a progress bar.\n";
+    std::cerr << "      <value>: Current value.\n";
+    std::cerr << "      <max>: Maximum value.\n";
+    std::cerr << "      [width]: Optional. Width of the progress bar (default 20).\n";
+    std::cerr << "      [fill_char]: Optional. Character name for filled portion (e.g., 'block_full').\n";
+    std::cerr << "      [empty_char]: Optional. Character name for empty portion (e.g., 'block_light').\n";
+    std::cerr << "      [text_color]: Optional. Text color (e.g., 'white', 'green').\n";
+    
+    std::cerr << "  art <file>  - Draw Unicode art from a file.\n";
+    std::cerr << "      <file>: Path to the art file with {name} placeholders for Unicode characters.\n";
+    
+    std::cerr << "  tooltip <text> [icon] [double] [text_color]  - Draw a tooltip.\n";
+    std::cerr << "      <text>: Text to display in the tooltip.\n";
+    std::cerr << "      [icon]: Optional. Icon name (e.g., 'info', 'warning').\n";
+    std::cerr << "      [double]: Optional. Use 'double' for double-line style.\n";
+    std::cerr << "      [text_color]: Optional. Text color (e.g., 'white', 'green').\n";
+    
+    std::cerr << "  calendar <month> <year> [text_color]  - Draw a calendar.\n";
+    std::cerr << "      <month>: Month (1-12).\n";
+    std::cerr << "      <year>: Year.\n";
+    std::cerr << "      [text_color]: Optional. Text color (e.g., 'white', 'green').\n";
+    
+    std::cerr << "  unicode <name>  - Print a Unicode character by name.\n";
+    std::cerr << "      <name>: Name of the Unicode character (e.g., 'check', 'smile').\n";
+    
+    std::cerr << "  list_unicode [category]  - List available Unicode characters.\n";
+    std::cerr << "      [category]: Optional. Category to list ('box', 'emoji', 'ui').\n";
+
     std::cerr << "\nExamples:\n";
     std::cerr << "  drawbox \"Hello, World!\" solid bg_green white\n";
     std::cerr << "  drawbox table \"Name,Age\" \"John,25\" \"Alice,30\"\n";
@@ -446,10 +570,204 @@ void display_help()
     std::cerr << "  drawbox banner \"Welcome to My Program!\" bg_magenta white\n";
     std::cerr << "  drawbox textbox \"Enter your name:\" bg_cyan white\n";
     std::cerr << "  drawbox textbox \"Title:\" > hello.txt\n";
+    std::cerr << "  drawbox showcase\n";
+    std::cerr << "  drawbox progress 50 100 30 block_full block_light white\n";
+    std::cerr << "  drawbox art art.txt\n";
+    std::cerr << "  drawbox tooltip \"This is a tooltip\" info double white\n";
+    std::cerr << "  drawbox calendar 12 2021 white\n";
+    std::cerr << "  drawbox unicode smile\n";
+    std::cerr << "  drawbox list_unicode emoji\n";
+
+}
+
+// ===== New Drawing Functions =====
+
+// Function to get a Unicode character by name
+std::string get_unicode(const std::string &name) {
+    // Check in all character sets
+    if (unicode::BOX_CHARS.count(name) > 0) {
+        return unicode::BOX_CHARS.at(name);
+    } else if (unicode::EMOJI.count(name) > 0) {
+        return unicode::EMOJI.at(name);
+    } else if (unicode::UI_ICONS.count(name) > 0) {
+        return unicode::UI_ICONS.at(name);
+    }
+    // Return the name itself if not found (fallback)
+    return name;
+}
+
+// Draw a progress bar with customizable characters
+void draw_progress_bar(int value, int max, int width = 20, 
+                      const std::string &filled_char = "block_full", 
+                      const std::string &empty_char = "block_light",
+                      const std::string &text_color = "bold_white") {
+    // Calculate percentage and bar fill
+    int percentage = (max > 0) ? (value * 100) / max : 0;
+    int filled_width = (width * value) / max;
+    
+    // Get color codes
+    std::string text_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
+    std::string reset_code = "\033[0m";
+    
+    // Get Unicode characters
+    std::string filled = get_unicode(filled_char);
+    std::string empty = get_unicode(empty_char);
+    
+    // Draw the progress bar
+    std::cout << text_code << "[";
+    for (int i = 0; i < width; i++) {
+        if (i < filled_width) {
+            std::cout << filled;
+        } else {
+            std::cout << empty;
+        }
+    }
+    std::cout << "] " << percentage << "%" << reset_code << std::endl;
+}
+
+// Function to draw a simple Unicode art
+void draw_unicode_art(const std::vector<std::string> &art_rows, 
+                     const std::string &text_color = "bold_white") {
+    // Get color code
+    std::string text_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
+    std::string reset_code = "\033[0m";
+    
+    // Replace unicode names with actual characters and print
+    for (const auto &row : art_rows) {
+        std::string processed_row = row;
+        
+        // Look for patterns like {name} and replace with Unicode
+        size_t start_pos = 0;
+        while ((start_pos = processed_row.find("{", start_pos)) != std::string::npos) {
+            size_t end_pos = processed_row.find("}", start_pos);
+            if (end_pos == std::string::npos) break;
+            
+            std::string key = processed_row.substr(start_pos + 1, end_pos - start_pos - 1);
+            std::string replacement = get_unicode(key);
+            
+            processed_row.replace(start_pos, end_pos - start_pos + 1, replacement);
+            start_pos += replacement.length();
+        }
+        
+        std::cout << text_code << processed_row << reset_code << std::endl;
+    }
+}
+
+// Function to draw a tooltip or notification bubble
+void draw_tooltip(const std::string &text, const std::string &icon = "info",
+                 bool use_double_line = false, const std::string &text_color = "bold_white") {
+    std::string icon_char = get_unicode(icon);
+    int text_length = visible_length(text);
+    int padding = 2;
+    int box_width = text_length + 2 * padding + 2; // +2 for the icon
+    
+    // Get color codes
+    std::string text_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
+    std::string reset_code = "\033[0m";
+    
+    // Choose box characters based on style
+    std::string h_line = use_double_line ? get_unicode("d_h_line") : get_unicode("h_line");
+    std::string v_line = use_double_line ? get_unicode("d_v_line") : get_unicode("v_line");
+    std::string tl_corner = use_double_line ? get_unicode("d_tl_corner") : get_unicode("tl_corner");
+    std::string tr_corner = use_double_line ? get_unicode("d_tr_corner") : get_unicode("tr_corner");
+    std::string bl_corner = use_double_line ? get_unicode("d_bl_corner") : get_unicode("bl_corner");
+    std::string br_corner = use_double_line ? get_unicode("d_br_corner") : get_unicode("br_corner");
+    
+    // Generate the horizontal line
+    std::string horizontal_line = repeat_string(h_line, box_width);
+    
+    // Draw the tooltip
+    std::cout << text_code << tl_corner << horizontal_line << tr_corner << reset_code << std::endl;
+    std::cout << text_code << v_line << " " << icon_char << " " << text << "  " << v_line << reset_code << std::endl;
+    std::cout << text_code << bl_corner << horizontal_line << br_corner << reset_code << std::endl;
+}
+
+// Draw a calendar for the given month and year
+void draw_calendar(int month, int year, const std::string &text_color = "bold_white") {
+    // Function to determine the day of week for a date (Zeller's congruence)
+    auto day_of_week = [](int d, int m, int y) -> int {
+        if (m < 3) {
+            m += 12;
+            y--;
+        }
+        int k = y % 100;
+        int j = y / 100;
+        return (d + 13 * (m + 1) / 5 + k + k / 4 + j / 4 + 5 * j) % 7;
+    };
+    
+    // Function to get days in a month
+    auto days_in_month = [](int m, int y) -> int {
+        if (m == 2) {
+            bool leap = (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
+            return leap ? 29 : 28;
+        } else if (m == 4 || m == 6 || m == 9 || m == 11) {
+            return 30;
+        } else {
+            return 31;
+        }
+    };
+    
+    // Month names
+    std::vector<std::string> month_names = {
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+    };
+    
+    // Get color code
+    std::string text_code = COLOR_MAP.count(text_color) ? COLOR_MAP.at(text_color) : COLOR_MAP.at("bold_white");
+    std::string reset_code = "\033[0m";
+    
+    // Create title
+    std::string title = month_names[month - 1] + " " + std::to_string(year);
+    
+    // Get first day of the month
+    int first_day = day_of_week(1, month, year);
+    // Sunday is 0 in our formula but we want it to be 6 (last day of week)
+    first_day = (first_day + 6) % 7;
+    
+    // Get number of days in the month
+    int days = days_in_month(month, year);
+
+    // Choose box characters based on style
+    std::string h_line =  get_unicode("h_line");
+    std::string v_line =  get_unicode("v_line");
+    std::string tl_corner =  get_unicode("tl_corner");
+    std::string tr_corner =  get_unicode("tr_corner");
+    std::string bl_corner =  get_unicode("bl_corner");
+    std::string br_corner =  get_unicode("br_corner");
+    
+    // Draw calendar
+    std::cout << text_code << title << reset_code << std::endl;
+    std::cout << text_code << tl_corner << h_line << repeat_string(h_line, 20) << tr_corner << reset_code << std::endl;
+    std::cout << text_code << v_line << " Mo Tu We Th Fr Sa Su" << v_line << reset_code << std::endl;
+    std::cout << text_code << tl_corner << h_line << repeat_string(h_line, 20) << tr_corner <<reset_code << std::endl;
+    
+    // Print days
+    int day_counter = 1;
+    for (int i = 0; i < 6; i++) {  // max 6 rows
+        std::cout << text_code << v_line;
+        for (int j = 0; j < 7; j++) {  // 7 days in a week
+            if ((i == 0 && j < first_day) || day_counter > days) {
+                std::cout << "   ";
+            } else {
+                std::cout << std::setw(2) << day_counter << " ";
+                day_counter++;
+            }
+        }
+        std::cout << v_line << reset_code << std::endl;
+        
+        // Break if we've printed all days
+        if (day_counter > days) break;
+    }
+    
+    std::cout << text_code << bl_corner << h_line << repeat_string(h_line, 20) << br_corner << reset_code << std::endl;
 }
 
 int main(int argc, char *argv[])
 {
+    // Set locale for proper Unicode support
+    setlocale(LC_ALL, "");
+
     if (argc < 2)
     {
         std::cerr << "Error: Missing required argument.\n";
@@ -474,7 +792,7 @@ int main(int argc, char *argv[])
     }
 
     // Check if the first argument is a mode or the text for the default box
-    bool is_mode = (command == "box" || command == "table" || command == "banner" || command == "textbox");
+    bool is_mode = (command == "box" || command == "table" || command == "banner" || command == "textbox" || command == "progress" || command == "art" || command == "tooltip" || command == "calendar" || command == "unicode" || command == "list_unicode");
 
     if (!is_mode)
     {
@@ -725,6 +1043,144 @@ int main(int argc, char *argv[])
 
         // Call the draw_textbox function with the arguments
         draw_textbox(title, bg_color, text_color);
+
+    } else if (command == "progress")
+    {
+        if (argc < 4)
+        {
+            std::cerr << "Error: Missing required arguments for progress bar.\n";
+            display_help();
+            return 1;
+        }
+        
+        int value = std::stoi(argv[2]);
+        int max = std::stoi(argv[3]);
+        int width = (argc > 4) ? std::stoi(argv[4]) : 20;
+        std::string fill_char = (argc > 5) ? argv[5] : "block_full";
+        std::string empty_char = (argc > 6) ? argv[6] : "block_light";
+        std::string text_color = (argc > 7) ? argv[7] : "bold_white";
+        
+        draw_progress_bar(value, max, width, fill_char, empty_char, text_color);
+    }
+    else if (command == "art")
+    {
+        if (argc < 3)
+        {
+            std::cerr << "Error: Missing file path for art.\n";
+            display_help();
+            return 1;
+        }
+        
+        std::string file_path = argv[2];
+        std::ifstream file(file_path);
+        
+        if (!file.is_open())
+        {
+            std::cerr << "Error: Could not open file '" << file_path << "'.\n";
+            return 1;
+        }
+        
+        std::vector<std::string> art_rows;
+        std::string line;
+        
+        while (std::getline(file, line)) {
+            art_rows.push_back(line);
+        }
+        
+        std::string text_color = (argc > 3) ? argv[3] : "bold_white";
+        draw_unicode_art(art_rows, text_color);
+    }
+    else if (command == "tooltip")
+    {
+        if (argc < 3)
+        {
+            std::cerr << "Error: Missing text for tooltip.\n";
+            display_help();
+            return 1;
+        }
+        
+        std::string text = argv[2];
+        std::string icon = (argc > 3) ? argv[3] : "info";
+        bool use_double = (argc > 4 && std::string(argv[4]) == "double");
+        std::string text_color = (argc > 5) ? argv[5] : "bold_white";
+        
+        draw_tooltip(text, icon, use_double, text_color);
+    }
+    else if (command == "calendar")
+    {
+        if (argc < 4)
+        {
+            std::cerr << "Error: Missing month or year for calendar.\n";
+            display_help();
+            return 1;
+        }
+        
+        int month = std::stoi(argv[2]);
+        int year = std::stoi(argv[3]);
+        std::string text_color = (argc > 4) ? argv[4] : "bold_white";
+        
+        if (month < 1 || month > 12)
+        {
+            std::cerr << "Error: Month must be between 1 and 12.\n";
+            return 1;
+        }
+        
+        draw_calendar(month, year, text_color);
+    }
+    else if (command == "unicode")
+    {
+        if (argc < 3)
+        {
+            std::cerr << "Error: Missing character name.\n";
+            display_help();
+            return 1;
+        }
+        
+        std::string name = argv[2];
+        std::cout << get_unicode(name) << std::endl;
+    }
+    else if (command == "list_unicode")
+    {
+        std::string category = (argc > 2) ? argv[2] : "all";
+        
+        if (category == "all" || category == "box")
+        {
+            std::cout << "Box Drawing Characters:" << std::endl;
+            for (const auto &pair : unicode::BOX_CHARS)
+            {
+                std::cout << pair.first << " : " << pair.second << "  ";
+                if (pair.first.length() < 10) std::cout << "\t";
+                if ((std::distance(unicode::BOX_CHARS.begin(), unicode::BOX_CHARS.find(pair.first)) + 1) % 5 == 0)
+                    std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
+        }
+        
+        if (category == "all" || category == "emoji")
+        {
+            std::cout << "Emoji Characters:" << std::endl;
+            for (const auto &pair : unicode::EMOJI)
+            {
+                std::cout << pair.first << " : " << pair.second << "  ";
+                if (pair.first.length() < 10) std::cout << "\t";
+                if ((std::distance(unicode::EMOJI.begin(), unicode::EMOJI.find(pair.first)) + 1) % 5 == 0)
+                    std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
+        }
+        
+        if (category == "all" || category == "ui")
+        {
+            std::cout << "UI Icon Characters:" << std::endl;
+            for (const auto &pair : unicode::UI_ICONS)
+            {
+                std::cout << pair.first << " : " << pair.second << "  ";
+                if (pair.first.length() < 10) std::cout << "\t";
+                if ((std::distance(unicode::UI_ICONS.begin(), unicode::UI_ICONS.find(pair.first)) + 1) % 5 == 0)
+                    std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
     }
 
     else
