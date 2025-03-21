@@ -298,7 +298,6 @@ void draw_table(const std::vector<std::vector<std::string>> &rows, bool solid_mo
                 if (i >= row.size() - 1) {
                     std::cout << reset_code;
                 }
-                
             } else {
                 // Normal mode or hollow mode
                 std::cout << " " << cell_content;
@@ -402,111 +401,6 @@ bool is_valid_color(const std::string &color, bool is_background = false)
 {
     std::string prefix = is_background ? "bg_" : "";
     return COLOR_MAP.count(prefix + color) > 0;
-}
-
-// Function to showcase all drawbox features
-void showcase_features()
-{
-    std::cout << "\n=== DRAWBOX FEATURE SHOWCASE ===\n"
-              << std::endl;
-
-    // Basic box (hollow)
-    std::cout << "1. Basic Box (hollow):" << std::endl;
-    draw_box("Hello, World!");
-    std::cout << std::endl;
-
-    // Solid box with custom colors
-    std::cout << "2. Solid Box with custom colors:" << std::endl;
-    draw_box("Hello, World!", true, "bg_green", "bold_white");
-    std::cout << std::endl;
-
-    // Basic table
-    std::cout << "3. Basic Table:" << std::endl;
-    std::vector<std::vector<std::string>> basic_table = {
-        {"Name", "Age", "Role"},
-        {"John Doe", "32", "Developer"},
-        {"Jane Smith", "28", "Designer"},
-        {"Bob Johnson", "45", "Manager"}};
-    draw_table(basic_table);
-    std::cout << std::endl;
-
-    // Solid table with custom colors
-    std::cout << "4. Solid Table with custom colors:" << std::endl;
-    std::vector<std::vector<std::string>> solid_table = {
-        {"Product", "Price", "Stock"},
-        {"Laptop", "$1200", "25"},
-        {"Phone", "$800", "45"},
-        {"Tablet", "$500", "15"}};
-    draw_table(solid_table, true, false, "bg_magenta", "bold_white");
-    std::cout << std::endl;
-
-    // Hollow table with colored borders
-    std::cout << "5. Hollow Table with colored borders:" << std::endl;
-    std::vector<std::vector<std::string>> hollow_table = {
-        {"Quarter", "Revenue", "Profit"},
-        {"Q1", "$250K", "$45K"},
-        {"Q2", "$310K", "$62K"},
-        {"Q3", "$285K", "$58K"},
-        {"Q4", "$340K", "$75K"}};
-    draw_table(hollow_table, false, true, "bg_blue", "bold_cyan");
-    std::cout << std::endl;
-
-    // Banner
-    std::cout << "6. Banner:" << std::endl;
-    draw_banner("Welcome to DrawBox!", "bg_yellow", "bold_black");
-    std::cout << std::endl;
-
-    // Textbox demo (simulation)
-    std::cout << "7. Textbox (normally interactive - example only):" << std::endl;
-    std::cout << "   Example of how it would appear:" << std::endl;
-    std::cout << "   \033[44m\033[1;37m Enter your name: \033[0m\033[34m \033[1;37m" << std::endl;
-    std::cout << "   > Alice" << std::endl;
-    std::cout << std::endl;
-
-    // Show color combinations
-    std::cout << "8. Color Combinations Examples:" << std::endl;
-    draw_box("Red on Black", true, "bg_black", "bold_red");
-    draw_box("Yellow on Blue", true, "bg_blue", "bold_yellow");
-    draw_box("Green on Magenta", true, "bg_magenta", "bold_green");
-    draw_box("Bold White on Red", true, "bg_red", "bold_white");
-    draw_box("Cyan on Green", true, "bg_green", "bold_cyan");
-    std::cout << std::endl;
-
-    // Available colors section
-    std::cout << "9. Available Colors:" << std::endl;
-    std::cout << "   Foreground colors: ";
-    for (const auto &color_pair : COLOR_MAP)
-    {
-        if (color_pair.first.substr(0, 3) != "bg_" && color_pair.first.substr(0, 5) != "bold_")
-        {
-            std::cout << color_pair.second << color_pair.first << "\033[0m ";
-        }
-    }
-    std::cout << std::endl;
-
-    std::cout << "   Bold colors: ";
-    for (const auto &color_pair : COLOR_MAP)
-    {
-        if (color_pair.first.substr(0, 5) == "bold_")
-        {
-            std::cout << color_pair.second << color_pair.first.substr(5) << "\033[0m ";
-        }
-    }
-    std::cout << std::endl;
-
-    std::cout << "   Background colors: ";
-    for (const auto &color_pair : COLOR_MAP)
-    {
-        if (color_pair.first.substr(0, 3) == "bg_")
-        {
-            std::cout << color_pair.second << " " << color_pair.first.substr(3) << " \033[0m ";
-        }
-    }
-    std::cout << std::endl
-              << std::endl;
-
-    std::cout << "=== END OF SHOWCASE ===\n"
-              << std::endl;
 }
 
 // Function to display help/usage instructions
@@ -740,12 +634,14 @@ void draw_calendar(int month, int year, const std::string &text_color = "bold_wh
     std::string tr_corner =  get_unicode("tr_corner");
     std::string bl_corner =  get_unicode("bl_corner");
     std::string br_corner =  get_unicode("br_corner");
+    std::string t_right =  get_unicode("t_right");
+    std::string t_left =  get_unicode("t_left");
     
     // Draw calendar
     std::cout << text_code << title << reset_code << std::endl;
     std::cout << text_code << tl_corner << h_line << repeat_string(h_line, 20) << tr_corner << reset_code << std::endl;
     std::cout << text_code << v_line << " Mo Tu We Th Fr Sa Su" << v_line << reset_code << std::endl;
-    std::cout << text_code << tl_corner << h_line << repeat_string(h_line, 20) << tr_corner <<reset_code << std::endl;
+    std::cout << text_code << t_right << h_line << repeat_string(h_line, 20) << t_left <<reset_code << std::endl;
     
     // Print days
     int day_counter = 1;
@@ -766,6 +662,136 @@ void draw_calendar(int month, int year, const std::string &text_color = "bold_wh
     }
     
     std::cout << text_code << bl_corner << h_line << repeat_string(h_line, 20) << br_corner << reset_code << std::endl;
+}
+
+// Function to showcase all drawbox features
+void showcase_features()
+{
+    draw_banner("=== DRAWBOX FEATURE SHOWCASE ===", "bg_blue", "bold_white");
+    std::cout << std::endl;
+
+    // Basic box (hollow)
+    std::cout << "1. Basic Box (hollow):" << std::endl;
+    draw_box("Hello, World!");
+    std::cout << std::endl;
+
+    // Solid box with custom colors
+    std::cout << "2. Solid Box with custom colors:" << std::endl;
+    draw_box("Hello, World!", true, "bg_green", "bold_white");
+    std::cout << std::endl;
+
+    // Basic table
+    std::cout << "3. Basic Table:" << std::endl;
+    std::vector<std::vector<std::string>> basic_table = {
+        {"Name", "Age", "Role"},
+        {"John Doe", "32", "Developer"},
+        {"Jane Smith", "28", "Designer"},
+        {"Bob Johnson", "45", "Manager"}};
+    draw_table(basic_table);
+    std::cout << std::endl;
+
+    // Solid table with custom colors
+    std::cout << "4. Solid Table with custom colors:" << std::endl;
+    std::vector<std::vector<std::string>> solid_table = {
+        {"Product", "Price", "Stock"},
+        {"Laptop", "$1200", "25"},
+        {"Phone", "$800", "45"},
+        {"Tablet", "$500", "15"}};
+    draw_table(solid_table, true, false, "bg_magenta", "bold_white");
+    std::cout << std::endl;
+
+    // Hollow table with colored borders
+    std::cout << "5. Hollow Table with colored borders:" << std::endl;
+    std::vector<std::vector<std::string>> hollow_table = {
+        {"Quarter", "Revenue", "Profit"},
+        {"Q1", "$250K", "$45K"},
+        {"Q2", "$310K", "$62K"},
+        {"Q3", "$285K", "$58K"},
+        {"Q4", "$340K", "$75K"}};
+    draw_table(hollow_table, false, true, "bg_blue", "bold_cyan");
+    std::cout << std::endl;
+
+    // Banner
+    std::cout << "6. Banner:" << std::endl;
+    draw_banner("Welcome to DrawBox!", "bg_yellow", "bold_black");
+    std::cout << std::endl;
+
+    // Textbox demo (simulation)
+    std::cout << "7. Textbox (normally interactive - example only):" << std::endl;
+    std::cout << "   Example of how it would appear:" << std::endl;
+    std::cout << "   \033[44m\033[1;37m Enter your name: \033[0m\033[34m \033[1;37m" << std::endl;
+    std::cout << "   > Alice" << std::endl;
+    std::cout << std::endl;
+
+    // Progress bar demo
+    std::cout << "8. Progress Bar:" << std::endl;
+    draw_progress_bar(50, 100, 30, "block_full", "block_light", "bold_white");
+    draw_progress_bar(75, 100, 30, "block_light", "block_dark", "bold_green");
+    std::cout << std::endl;
+
+    // Tooltip demo
+    std::cout << "9. Tooltip Examples:" << std::endl;
+    draw_tooltip("This is a tooltip", "info", false, "bold_white");
+    draw_tooltip("Warning: System overload", "warning", true, "bold_yellow");
+    std::cout << std::endl;
+
+    // Calendar demo
+    std::cout << "10. Calendar Example:" << std::endl;
+    draw_calendar(5, 2025, "bold_white");
+    std::cout << std::endl;
+
+    // Unicode character demo
+    std::cout << "11. Unicode Characters:" << std::endl;
+    std::cout << "   Checkmark: " << get_unicode("check") << std::endl;
+    std::cout << "   Cross mark: " << get_unicode("cross_mark") << std::endl;
+    std::cout << "   Smiley face: " << get_unicode("smile") << std::endl;
+    std::cout << std::endl;
+
+
+    // Show color combinations
+    std::cout << "8. Color Combinations Examples:" << std::endl;
+    draw_box("Red on Black", true, "bg_black", "bold_red");
+    draw_box("Yellow on Blue", true, "bg_blue", "bold_yellow");
+    draw_box("Green on Magenta", true, "bg_magenta", "bold_green");
+    draw_box("Bold White on Red", true, "bg_red", "bold_white");
+    draw_box("Cyan on Green", true, "bg_green", "bold_cyan");
+    std::cout << std::endl;
+
+    // Available colors section
+    std::cout << "9. Available Colors:" << std::endl;
+    std::cout << "   Foreground colors: ";
+    for (const auto &color_pair : COLOR_MAP)
+    {
+        if (color_pair.first.substr(0, 3) != "bg_" && color_pair.first.substr(0, 5) != "bold_")
+        {
+            std::cout << color_pair.second << color_pair.first << "\033[0m ";
+        }
+    }
+    std::cout << std::endl;
+
+    std::cout << "   Bold colors: ";
+    for (const auto &color_pair : COLOR_MAP)
+    {
+        if (color_pair.first.substr(0, 5) == "bold_")
+        {
+            std::cout << color_pair.second << color_pair.first.substr(5) << "\033[0m ";
+        }
+    }
+    std::cout << std::endl;
+
+    std::cout << "   Background colors: ";
+    for (const auto &color_pair : COLOR_MAP)
+    {
+        if (color_pair.first.substr(0, 3) == "bg_")
+        {
+            std::cout << color_pair.second << " " << color_pair.first.substr(3) << " \033[0m ";
+        }
+    }
+    std::cout << std::endl
+              << std::endl;
+
+    draw_banner("=== END OF SHOWCASE ===", "bg_blue", "bold_white");
+    std::cout << std::endl;
 }
 
 int main(int argc, char *argv[])
