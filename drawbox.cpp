@@ -521,7 +521,7 @@ void draw_progress_bar(int value, int max, int width = 20,
             std::cout << empty;
         }
     }
-    std::cout << "] " << percentage << "%" << reset_code << std::endl;
+    std::cout << "] " << percentage << "%" << reset_code;
 }
 
 // Function to draw a simple Unicode art
