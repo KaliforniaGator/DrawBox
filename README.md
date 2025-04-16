@@ -1,5 +1,3 @@
-![Screen Shot 2025-04-15 at 9(1)](https://github.com/user-attachments/assets/efec00a7-423e-4a97-8544-40f6d6eeaaa5)
-
 # DrawBox
 
 DrawBox is a versatile command-line utility that enhances terminal output with beautifully formatted boxes, tables, banners, and interactive textboxes. It supports customizable background and text colors, with multiple display modes for different visual needs.
@@ -135,6 +133,9 @@ drawbox --help      # Show usage instructions
    ```bash
    drawbox textbox "Enter your name:" > username.txt
    ```
+
+## Showcase
+![Screen Shot 2025-04-15 at 9(1)](https://github.com/user-attachments/assets/efec00a7-423e-4a97-8544-40f6d6eeaaa5)
 
 ## Supported Colors
 
